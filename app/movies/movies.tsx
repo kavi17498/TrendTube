@@ -319,14 +319,29 @@ export default function Movies() {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <Text style={styles.title}>Trending Movies</Text>
-          <Text style={styles.subtitle}>
-            {totalResults.toLocaleString()} movies available
-            {(filters.startDate || filters.endDate || filters.primaryReleaseYear || filters.voteAverageGte || filters.withGenres) && ' (filtered)'}
-          </Text>
+        {/* User Profile Section */}
+        <View style={styles.userSection}>
+          <View style={styles.userInfo}>
+            <View style={styles.userIconContainer}>
+              <MaterialIcons name="account-circle" size={40} color="#007AFF" />
+            </View>
+            <View style={styles.userDetails}>
+              <Text style={styles.userName}>John Doe</Text>
+              <Text style={styles.userRole}>Movie Explorer</Text>
+            </View>
+          </View>
         </View>
-        <View style={styles.headerActions}>
+
+        {/* Main Header Content */}
+        <View style={styles.headerContent}>
+          <View style={styles.headerLeft}>
+            <Text style={styles.title}>Trending Movies</Text>
+            <Text style={styles.subtitle}>
+              {totalResults.toLocaleString()} movies available
+              {(filters.startDate || filters.endDate || filters.primaryReleaseYear || filters.voteAverageGte || filters.withGenres) && ' (filtered)'}
+            </Text>
+          </View>
+          <View style={styles.headerActions}>
           <TouchableOpacity 
             style={[
               styles.actionButton, 
@@ -353,6 +368,7 @@ export default function Movies() {
           <TouchableOpacity style={styles.refreshButton} onPress={handleRefresh}>
             <MaterialIcons name="refresh" size={20} color="#fff" />
           </TouchableOpacity>
+          </View>
         </View>
       </View>
 
@@ -914,14 +930,40 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 20,
     backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#e1e5e9',
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 20,
+  },
+  userSection: {
+    marginBottom: 16,
+  },
+  userInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  userIconContainer: {
+    marginRight: 12,
+  },
+  userDetails: {
+    flex: 1,
+  },
+  userName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  userRole: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 2,
+  },
+  headerContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   headerLeft: {
     flex: 1,
