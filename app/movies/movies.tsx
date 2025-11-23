@@ -3,7 +3,7 @@ import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Alert, FlatList, Image, Modal, ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
-import { clearFilters, fetchMovies, updateFilters } from '../../Redux/movieslicer';
+import { clearFilters, fetchMovies, toggleFavorite, updateFilters } from '../../Redux/movieslicer';
 
 interface Movie {
   id: number;
@@ -22,6 +22,7 @@ interface RootState {
     currentPage: number;
     totalPages: number;
     totalResults: number;
+    favorites: number[];
     filters: {
       startDate: string | null;
       endDate: string | null;
@@ -47,9 +48,10 @@ interface RootState {
 export default function Movies() {
   const dispatch = useDispatch();
   const router = useRouter();
-  const { list: movies, currentPage, totalPages, totalResults, filters, status, error } = useSelector((state: RootState) => state.movies);
+  const { list: movies, currentPage, totalPages, totalResults, favorites, filters, status, error } = useSelector((state: RootState) => state.movies);
   
   const [showFilters, setShowFilters] = useState(false);
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
   const [showYearPicker, setShowYearPicker] = useState(false);
@@ -223,27 +225,49 @@ export default function Movies() {
       ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
       : null;
     
+    const isFavorite = favorites.includes(movie.id);
+    
     const handleMoviePress = () => {
       router.push({
         pathname: '/movies/[id]',
         params: { id: movie.id.toString() }
       });
     };
+
+    const handleFavoritePress = (event: any) => {
+      event.stopPropagation(); // Prevent movie card press
+      dispatch(toggleFavorite(movie.id));
+    };
     
     return (
       <TouchableOpacity style={styles.movieCard} onPress={handleMoviePress}>
         <View style={styles.cardContent}>
-          {imageUrl ? (
-            <Image 
-              source={{ uri: imageUrl }}
-              style={styles.posterImage}
-              resizeMode="cover"
-            />
-          ) : (
-            <View style={styles.placeholderImage}>
-              <MaterialIcons name="movie" size={60} color="#ccc" />
-            </View>
-          )}
+          <View style={styles.posterContainer}>
+            {imageUrl ? (
+              <Image 
+                source={{ uri: imageUrl }}
+                style={styles.posterImage}
+                resizeMode="cover"
+              />
+            ) : (
+              <View style={styles.placeholderImage}>
+                <MaterialIcons name="movie" size={60} color="#ccc" />
+              </View>
+            )}
+            
+            {/* Favorite Button */}
+            <TouchableOpacity 
+              style={styles.favoriteButton}
+              onPress={handleFavoritePress}
+              activeOpacity={0.7}
+            >
+              <MaterialIcons 
+                name={isFavorite ? "favorite" : "favorite-border"} 
+                size={24} 
+                color={isFavorite ? "#ff4757" : "#fff"} 
+              />
+            </TouchableOpacity>
+          </View>
           
           <View style={styles.movieInfo}>
             <Text style={styles.movieTitle} numberOfLines={2}>
@@ -303,6 +327,20 @@ export default function Movies() {
           </Text>
         </View>
         <View style={styles.headerActions}>
+          <TouchableOpacity 
+            style={[
+              styles.actionButton, 
+              showFavoritesOnly && styles.activeFilter
+            ]} 
+            onPress={() => setShowFavoritesOnly(!showFavoritesOnly)}
+          >
+            <MaterialIcons name="favorite" size={20} color="#fff" />
+            {favorites.length > 0 && (
+              <View style={styles.favoritesBadge}>
+                <Text style={styles.favoritesBadgeText}>{favorites.length}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
           <TouchableOpacity 
             style={[
               styles.actionButton, 
@@ -530,11 +568,20 @@ export default function Movies() {
 
       {/* Movies List */}
       <FlatList
-        data={movies}
+        data={showFavoritesOnly ? movies.filter(movie => favorites.includes(movie.id)) : movies}
         renderItem={renderMovieCard}
         keyExtractor={(item) => item.id.toString()}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.listContainer}
+        ListEmptyComponent={
+          showFavoritesOnly ? (
+            <View style={styles.emptyFavoritesContainer}>
+              <MaterialIcons name="favorite-border" size={60} color="#ccc" />
+              <Text style={styles.emptyFavoritesText}>No favorite movies yet</Text>
+              <Text style={styles.emptyFavoritesSubtext}>Tap the heart icon on any movie to add it to your favorites</Text>
+            </View>
+          ) : null
+        }
       />
 
       {/* Pagination Controls */}
@@ -1058,6 +1105,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     padding: 16,
   },
+  posterContainer: {
+    position: 'relative',
+    width: 80,
+    height: 120,
+  },
   posterImage: {
     width: 80,
     height: 120,
@@ -1070,6 +1122,25 @@ const styles = StyleSheet.create({
     backgroundColor: '#f0f0f0',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  favoriteButton: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    borderRadius: 20,
+    width: 32,
+    height: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 2,
   },
   movieInfo: {
     flex: 1,
@@ -1275,5 +1346,44 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#fff',
     fontWeight: '600',
+  },
+  // Favorites Styles
+  favoritesBadge: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    backgroundColor: '#ff4757',
+    borderRadius: 10,
+    minWidth: 20,
+    height: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+  },
+  favoritesBadgeText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  emptyFavoritesContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 60,
+    paddingHorizontal: 20,
+  },
+  emptyFavoritesText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+    marginTop: 16,
+    textAlign: 'center',
+  },
+  emptyFavoritesSubtext: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 8,
+    textAlign: 'center',
+    lineHeight: 20,
   },
 });

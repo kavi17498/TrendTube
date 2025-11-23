@@ -212,6 +212,7 @@ const movieSlice = createSlice({
     movieDetail: null as any,
     detailStatus: 'idle' as 'idle' | 'loading' | 'succeeded' | 'failed',
     detailError: null as string | null,
+    favorites: [] as number[],
     filters: {
       // Date filters
       startDate: null as string | null,
@@ -268,6 +269,15 @@ const movieSlice = createSlice({
       };
       state.status = 'idle'; // Trigger refetch
     },
+    toggleFavorite: (state, action) => {
+      const movieId = action.payload;
+      const index = state.favorites.indexOf(movieId);
+      if (index > -1) {
+        state.favorites.splice(index, 1);
+      } else {
+        state.favorites.push(movieId);
+      }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -306,5 +316,5 @@ const movieSlice = createSlice({
   },
 });
 
-export const { updateFilters, clearFilters } = movieSlice.actions;
+export const { updateFilters, clearFilters, toggleFavorite } = movieSlice.actions;
 export default movieSlice.reducer;
