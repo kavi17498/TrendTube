@@ -360,14 +360,12 @@ export default function Movies() {
       <View style={styles.header}>
         {/* User Profile Section */}
         <View style={styles.userSection}>
-          <View style={styles.userInfo}>
-            <View style={styles.userIconContainer}>
-              <MaterialIcons name="account-circle" size={40} color="#007AFF" />
-            </View>
-            <View style={styles.userDetails}>
-              <Text style={styles.userName}>{currentUser?.fullName || 'Guest User'}</Text>
-              <Text style={styles.userRole}>{currentUser?.role || 'Viewer'}</Text>
-            </View>
+          <View style={styles.userIconContainer}>
+            <MaterialIcons name="account-circle" size={40} color="#007AFF" />
+          </View>
+          <View style={styles.userDetails}>
+            <Text style={styles.userName}>{currentUser?.fullName || 'Guest User'}</Text>
+            <Text style={styles.userRole}>{currentUser?.role || 'Viewer'}</Text>
           </View>
           <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
             <MaterialIcons name="logout" size={20} color="#ff4757" />
@@ -1009,6 +1007,7 @@ const styles = StyleSheet.create({
     padding: 8,
     borderRadius: 20,
     backgroundColor: 'rgba(255, 71, 87, 0.1)',
+    marginRight: 16,
   },
   headerContent: {
     flexDirection: 'row',
