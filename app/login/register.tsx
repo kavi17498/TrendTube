@@ -12,6 +12,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { userService } from '../../services/userService';
 
 export default function RegisterScreen() {
   const [fullName, setFullName] = useState('');
@@ -29,50 +30,33 @@ export default function RegisterScreen() {
   };
 
   const handleRegister = () => {
-    if (!fullName.trim()) {
-      Alert.alert('Error', 'Please enter your full name');
-      return;
-    }
-    if (!email.trim()) {
-      Alert.alert('Error', 'Please enter your email');
-      return;
-    }
-    if (!validateEmail(email)) {
-      Alert.alert('Error', 'Please enter a valid email address');
-      return;
-    }
-    if (!username.trim()) {
-      Alert.alert('Error', 'Please enter a username');
-      return;
-    }
-    if (username.length < 3) {
-      Alert.alert('Error', 'Username must be at least 3 characters long');
-      return;
-    }
-    if (!password.trim()) {
-      Alert.alert('Error', 'Please enter a password');
-      return;
-    }
-    if (password.length < 6) {
-      Alert.alert('Error', 'Password must be at least 6 characters long');
-      return;
-    }
     if (password !== confirmPassword) {
       Alert.alert('Error', 'Passwords do not match');
       return;
     }
 
-    // Here you would typically send the registration data to your backend
-    Alert.alert(
-      'Success',
-      'Account created successfully! Please login with your new credentials.',
-      [
-        {
-          text: 'OK',
-          onPress: () => router.back(), // Go back to login screen
-        },
-      ]
-    );
+    // Use userService for registration
+    const result = userService.register({
+      fullName,
+      email,
+      username,
+      password
+    });
+
+    if (result.success) {
+      Alert.alert(
+        'Success',
+        result.message,
+        [
+          {
+            text: 'OK',
+            onPress: () => router.back(), // Go back to login screen
+          },
+        ]
+      );
+    } else {
+      Alert.alert('Error', result.message);
+    }
   };
 
   const handleSignInNavigation = () => {

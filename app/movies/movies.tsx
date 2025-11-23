@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { Alert, FlatList, Image, Modal, ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { clearFilters, fetchMovies, toggleFavorite, updateFilters } from '../../Redux/movieslicer';
+import { logout } from '../../Redux/authSlice';
 
 interface Movie {
   id: number;
@@ -14,6 +15,16 @@ interface Movie {
   vote_average: number;
   release_date: string;
   genre_ids: number[];
+}
+
+interface User {
+  id: string;
+  fullName: string;
+  email: string;
+  username: string;
+  createdAt: string;
+  avatar?: string;
+  role: string;
 }
 
 interface RootState {
@@ -43,12 +54,40 @@ interface RootState {
     status: 'idle' | 'loading' | 'succeeded' | 'failed';
     error: string | null;
   };
+  auth: {
+    currentUser: User | null;
+    isAuthenticated: boolean;
+    isLoading: boolean;
+    error: string | null;
+  };
 }
 
 export default function Movies() {
   const dispatch = useDispatch();
   const router = useRouter();
   const { list: movies, currentPage, totalPages, totalResults, favorites, filters, status, error } = useSelector((state: RootState) => state.movies);
+  const { currentUser } = useSelector((state: RootState) => state.auth);
+
+  const handleLogout = () => {
+    Alert.alert(
+      'Logout',
+      'Are you sure you want to logout?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Logout',
+          style: 'destructive',
+          onPress: () => {
+            dispatch(logout());
+            router.replace('/');
+          },
+        },
+      ]
+    );
+  };
   
   const [showFilters, setShowFilters] = useState(false);
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
@@ -326,10 +365,13 @@ export default function Movies() {
               <MaterialIcons name="account-circle" size={40} color="#007AFF" />
             </View>
             <View style={styles.userDetails}>
-              <Text style={styles.userName}>John Doe</Text>
-              <Text style={styles.userRole}>Movie Explorer</Text>
+              <Text style={styles.userName}>{currentUser?.fullName || 'Guest User'}</Text>
+              <Text style={styles.userRole}>{currentUser?.role || 'Viewer'}</Text>
             </View>
           </View>
+          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+            <MaterialIcons name="logout" size={20} color="#ff4757" />
+          </TouchableOpacity>
         </View>
 
         {/* Main Header Content */}
@@ -939,6 +981,9 @@ const styles = StyleSheet.create({
   },
   userSection: {
     marginBottom: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   userInfo: {
     flexDirection: 'row',
@@ -959,6 +1004,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
     marginTop: 2,
+  },
+  logoutButton: {
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 71, 87, 0.1)',
   },
   headerContent: {
     flexDirection: 'row',

@@ -12,12 +12,16 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { useDispatch } from 'react-redux';
+import { loginSuccess, loginFailure, setLoading } from '../../Redux/authSlice';
+import { userService } from '../../services/userService';
 
 export default function LoginScreen() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
+  const dispatch = useDispatch();
 
   const handleLogin = () => {
     if (!username.trim()) {
@@ -29,11 +33,16 @@ export default function LoginScreen() {
       return;
     }
 
-    // Simple validation - you can replace this with actual authentication
-    if (username === 'admin' && password === 'password') {
+    dispatch(setLoading(true));
+    
+    // Use userService for authentication
+    const result = userService.login({ username: username.trim(), password });
+    
+    if (result.success && result.user) {
+      dispatch(loginSuccess(result.user));
       Alert.alert(
         'Success', 
-        'Login successful!',
+        result.message,
         [
           {
             text: 'OK',
@@ -42,7 +51,8 @@ export default function LoginScreen() {
         ]
       );
     } else {
-      Alert.alert('Error', 'Invalid username or password');
+      dispatch(loginFailure(result.message));
+      Alert.alert('Error', result.message);
     }
   };
 
