@@ -64,6 +64,8 @@ export default function LoginScreen() {
           <MaterialIcons name="account-circle" size={80} color="#007AFF" />
           <Text style={styles.title}>Welcome Back</Text>
           <Text style={styles.subtitle}>Sign in to continue</Text>
+                    <Text style={styles.subtitle}>Username : admin Password : password</Text>
+
         </View>
 
         <View style={styles.form}>

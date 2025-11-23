@@ -183,7 +183,7 @@ export const fetchMovies = createAsyncThunk(
 export const fetchMovieDetails = createAsyncThunk(
   'movies/fetchMovieDetails',
   async (movieId: string) => {
-    const url = `https://api.themoviedb.org/3/find/${movieId}`;
+    const url = `https://api.themoviedb.org/3/movie/${movieId}?language=en-US`;
     
     const options = {
       method: 'GET',
@@ -196,10 +196,8 @@ export const fetchMovieDetails = createAsyncThunk(
     const response = await fetch(url, options);
     const data = await response.json();
     
-    // Return the first movie result if available
-    return data.movie_results && data.movie_results.length > 0 
-      ? data.movie_results[0] 
-      : null;
+    // Return the movie data directly
+    return data;
   }
 );
 

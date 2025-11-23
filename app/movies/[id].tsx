@@ -13,13 +13,21 @@ interface MovieDetail {
   backdrop_path: string;
   vote_average: number;
   release_date: string;
-  genre_ids: number[];
+  genres: Array<{ id: number; name: string }>;
   adult: boolean;
   original_language: string;
   original_title: string;
   popularity: number;
   video: boolean;
   vote_count: number;
+  runtime: number;
+  budget: number;
+  revenue: number;
+  tagline: string;
+  status: string;
+  production_companies: Array<{ id: number; name: string; logo_path?: string }>;
+  production_countries: Array<{ iso_3166_1: string; name: string }>;
+  spoken_languages: Array<{ english_name: string; iso_639_1: string; name: string }>;
 }
 
 interface RootState {
@@ -45,32 +53,6 @@ export default function MovieDetail() {
 
   const handleGoBack = () => {
     router.back();
-  };
-
-  const getGenreNames = (genreIds: number[]) => {
-    const genreMap: { [key: number]: string } = {
-      28: 'Action',
-      12: 'Adventure',
-      16: 'Animation',
-      35: 'Comedy',
-      80: 'Crime',
-      99: 'Documentary',
-      18: 'Drama',
-      10751: 'Family',
-      14: 'Fantasy',
-      36: 'History',
-      27: 'Horror',
-      10402: 'Music',
-      9648: 'Mystery',
-      10749: 'Romance',
-      878: 'Science Fiction',
-      10770: 'TV Movie',
-      53: 'Thriller',
-      10752: 'War',
-      37: 'Western'
-    };
-    
-    return genreIds.map(id => genreMap[id] || 'Unknown').join(', ');
   };
 
   const formatReleaseDate = (dateString: string) => {
@@ -189,14 +171,14 @@ export default function MovieDetail() {
         </View>
 
         {/* Genres */}
-        {movieDetail.genre_ids && movieDetail.genre_ids.length > 0 && (
+        {movieDetail.genres && movieDetail.genres.length > 0 && (
           <View style={styles.genresSection}>
             <Text style={styles.sectionTitle}>Genres</Text>
             <View style={styles.genresContainer}>
-              {movieDetail.genre_ids.map((genreId) => (
-                <View key={genreId} style={styles.genreChip}>
+              {movieDetail.genres.map((genre) => (
+                <View key={genre.id} style={styles.genreChip}>
                   <Text style={styles.genreText}>
-                    {getGenreNames([genreId])}
+                    {genre.name}
                   </Text>
                 </View>
               ))}
@@ -212,11 +194,44 @@ export default function MovieDetail() {
           </Text>
         </View>
 
+        {/* Tagline */}
+        {movieDetail.tagline && (
+          <View style={styles.taglineSection}>
+            <Text style={styles.tagline}>"{movieDetail.tagline}"</Text>
+          </View>
+        )}
+
         {/* Additional Info */}
         <View style={styles.additionalInfoSection}>
-          <Text style={styles.sectionTitle}>Additional Information</Text>
+          <Text style={styles.sectionTitle}>Movie Details</Text>
           
           <View style={styles.infoGrid}>
+            {movieDetail.runtime && (
+              <View style={styles.infoItem}>
+                <Text style={styles.infoLabel}>Runtime</Text>
+                <Text style={styles.infoValue}>{movieDetail.runtime} min</Text>
+              </View>
+            )}
+            
+            <View style={styles.infoItem}>
+              <Text style={styles.infoLabel}>Status</Text>
+              <Text style={styles.infoValue}>{movieDetail.status || 'Unknown'}</Text>
+            </View>
+            
+            {movieDetail.budget > 0 && (
+              <View style={styles.infoItem}>
+                <Text style={styles.infoLabel}>Budget</Text>
+                <Text style={styles.infoValue}>${(movieDetail.budget / 1000000).toFixed(1)}M</Text>
+              </View>
+            )}
+
+            {movieDetail.revenue > 0 && (
+              <View style={styles.infoItem}>
+                <Text style={styles.infoLabel}>Revenue</Text>
+                <Text style={styles.infoValue}>${(movieDetail.revenue / 1000000).toFixed(1)}M</Text>
+              </View>
+            )}
+
             <View style={styles.infoItem}>
               <Text style={styles.infoLabel}>Popularity</Text>
               <Text style={styles.infoValue}>{movieDetail.popularity.toFixed(1)}</Text>
@@ -226,18 +241,38 @@ export default function MovieDetail() {
               <Text style={styles.infoLabel}>Adult Content</Text>
               <Text style={styles.infoValue}>{movieDetail.adult ? 'Yes' : 'No'}</Text>
             </View>
-            
-            <View style={styles.infoItem}>
-              <Text style={styles.infoLabel}>Video Available</Text>
-              <Text style={styles.infoValue}>{movieDetail.video ? 'Yes' : 'No'}</Text>
-            </View>
-
-            <View style={styles.infoItem}>
-              <Text style={styles.infoLabel}>Movie ID</Text>
-              <Text style={styles.infoValue}>{movieDetail.id}</Text>
-            </View>
           </View>
         </View>
+
+        {/* Production Companies */}
+        {movieDetail.production_companies && movieDetail.production_companies.length > 0 && (
+          <View style={styles.productionSection}>
+            <Text style={styles.sectionTitle}>Production Companies</Text>
+            <View style={styles.productionContainer}>
+              {movieDetail.production_companies.slice(0, 5).map((company) => (
+                <Text key={company.id} style={styles.productionCompany}>
+                  {company.name}
+                </Text>
+              ))}
+            </View>
+          </View>
+        )}
+
+        {/* Languages */}
+        {movieDetail.spoken_languages && movieDetail.spoken_languages.length > 0 && (
+          <View style={styles.languagesSection}>
+            <Text style={styles.sectionTitle}>Spoken Languages</Text>
+            <View style={styles.languagesContainer}>
+              {movieDetail.spoken_languages.map((language, index) => (
+                <View key={language.iso_639_1} style={styles.languageChip}>
+                  <Text style={styles.languageText}>
+                    {language.english_name}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
       </View>
     </ScrollView>
   );
@@ -460,5 +495,50 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#333',
     fontWeight: 'bold',
+  },
+  taglineSection: {
+    marginBottom: 20,
+    paddingHorizontal: 4,
+  },
+  tagline: {
+    fontSize: 16,
+    color: '#666',
+    fontStyle: 'italic',
+    textAlign: 'center',
+    lineHeight: 22,
+  },
+  productionSection: {
+    marginBottom: 24,
+  },
+  productionContainer: {
+    gap: 8,
+  },
+  productionCompany: {
+    fontSize: 14,
+    color: '#333',
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    backgroundColor: '#f0f0f0',
+    borderRadius: 6,
+    overflow: 'hidden',
+  },
+  languagesSection: {
+    marginBottom: 24,
+  },
+  languagesContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  languageChip: {
+    backgroundColor: '#28a745',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  languageText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
   },
 });
