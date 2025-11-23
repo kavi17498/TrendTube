@@ -13,7 +13,7 @@ import {
   View,
 } from 'react-native';
 import { useDispatch } from 'react-redux';
-import { loginSuccess, loginFailure, setLoading } from '../../Redux/authSlice';
+import { loginFailure, loginSuccess, setLoading } from '../../Redux/authSlice';
 import { userService } from '../../services/userService';
 
 export default function LoginScreen() {

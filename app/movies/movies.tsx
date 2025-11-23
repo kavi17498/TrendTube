@@ -3,8 +3,8 @@ import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Alert, FlatList, Image, Modal, ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
-import { clearFilters, fetchMovies, toggleFavorite, updateFilters } from '../../Redux/movieslicer';
 import { logout } from '../../Redux/authSlice';
+import { clearFilters, fetchMovies, toggleFavorite, updateFilters } from '../../Redux/movieslicer';
 
 interface Movie {
   id: number;
